@@ -1,17 +1,10 @@
 /*
  * This class was copied from this Stackoverflow Q&A:
  * http://stackoverflow.com/questions/2253061/secure-http-post-in-android/2253280#2253280
- * Thanks go to MattC!  
+ * Thanks go to MattC!
  */
-package org.acra.util;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.Iterator;
-import java.util.Map;
+package org.acra.util;
 
 import org.acra.ACRA;
 import org.acra.sender.HttpSender.Method;
@@ -42,12 +35,21 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.SocketTimeoutException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Iterator;
+import java.util.Map;
+
+
 public final class HttpRequest {
 
     private static class SocketTimeOutRetryHandler implements HttpRequestRetryHandler {
 
         private final HttpParams httpParams;
-        private final int maxNrRetries;
+        private final int        maxNrRetries;
 
         /**
          * @param httpParams
@@ -87,13 +89,13 @@ public final class HttpRequest {
         }
     }
 
-    private String login;
-    private String password;
-    private int connectionTimeOut = 3000;
-    private int socketTimeOut = 3000;
-    private int maxNrRetries = 3;
-    private Map<String,String> headers;
-    
+    private String              login;
+    private String              password;
+    private int                 connectionTimeOut = 3000;
+    private int                 socketTimeOut     = 3000;
+    private int                 maxNrRetries      = 3;
+    private Map<String, String> headers;
+
     public void setLogin(String login) {
         this.login = login;
     }
@@ -110,11 +112,10 @@ public final class HttpRequest {
         this.socketTimeOut = socketTimeOut;
     }
 
-    public void setHeaders(Map<String,String> headers) {
-       this.headers = headers;
+    public void setHeaders(Map<String, String> headers) {
+        this.headers = headers;
     }
 
-    
     /**
      * The default number of retries is 3.
      * 
@@ -154,7 +155,7 @@ public final class HttpRequest {
                 final StatusLine statusLine = response.getStatusLine();
                 if (statusLine != null) {
                     final String statusCode = Integer.toString(response.getStatusLine().getStatusCode());
-    
+
                     if (!statusCode.equals("409") // 409 return code means that the
                                                   // report has been received
                                                   // already. So we can discard it.
@@ -188,8 +189,8 @@ public final class HttpRequest {
             }
         } finally {
             if (response != null) {
-				response.getEntity().consumeContent();
-			}
+                response.getEntity().consumeContent();
+            }
         }
     }
 
@@ -205,11 +206,7 @@ public final class HttpRequest {
 
         final SchemeRegistry registry = new SchemeRegistry();
         registry.register(new Scheme("http", new PlainSocketFactory(), 80));
-        if (ACRA.getConfig().disableSSLCertValidation()) {
-            registry.register(new Scheme("https", (new FakeSocketFactory()), 443));
-        } else {
-            registry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
-        }
+        registry.register(new Scheme("https", SSLSocketFactory.getSocketFactory(), 443));
 
         final ClientConnectionManager clientConnectionManager = new ThreadSafeClientConnManager(httpParams, registry);
         final DefaultHttpClient httpClient = new DefaultHttpClient(clientConnectionManager, httpParams);
@@ -237,14 +234,14 @@ public final class HttpRequest {
 
         final HttpEntityEnclosingRequestBase httpRequest;
         switch (method) {
-        case POST:
-            httpRequest = new HttpPost(url.toString());
-            break;
-        case PUT:
-            httpRequest = new HttpPut(url.toString());
-            break;
-        default:
-            throw new UnsupportedOperationException("Unknown method: " + method.name());
+            case POST:
+                httpRequest = new HttpPost(url.toString());
+                break;
+            case PUT:
+                httpRequest = new HttpPut(url.toString());
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown method: " + method.name());
         }
 
         final UsernamePasswordCredentials creds = getCredentials();
@@ -257,15 +254,15 @@ public final class HttpRequest {
                         "text/html,application/xml,application/json,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5");
         httpRequest.setHeader("Content-Type", type.getContentType());
 
-        if(headers !=null) {
-           Iterator<String> headerIt = headers.keySet().iterator();
-           while(headerIt.hasNext()) {
-              String header = headerIt.next();
-              String value = headers.get(header);
-              httpRequest.setHeader(header, value);
-           }
+        if (headers != null) {
+            Iterator<String> headerIt = headers.keySet().iterator();
+            while (headerIt.hasNext()) {
+                String header = headerIt.next();
+                String value = headers.get(header);
+                httpRequest.setHeader(header, value);
+            }
         }
-        
+
         httpRequest.setEntity(new StringEntity(content, "UTF-8"));
 
         return httpRequest;
